@@ -75,13 +75,13 @@ function PasswordConfirmation(props) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Background */}
-      <img className="w-screen h-screen object-cover absolute inset-0" src={img} alt="background" />
+      <img className="w-screen h-full md:h-screen object-cover absolute inset-0" src={img} alt="background" />
       <div className="absolute inset-0 bg-black/60"></div>
       <div className="relative flex-1 flex flex-col">
         <header className="relative">
-          <div className="relative mx-4 md:ml-14 py-4">
+          <div className="relative mx-4 md:ml-14 py-4 md:py-6">
             <svg
-              className="relative w-12 h-12 md:w-16 md:h-16"
+              className="relative w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
@@ -92,12 +92,12 @@ function PasswordConfirmation(props) {
         </header>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center px-4 py-10">
-          <div className="relative bg-black/60 backdrop-blur-md w-full max-w-md mx-auto rounded-2xl shadow-2xl border border-white/10 text-center p-6 md:p-8">
-            <h1 className="font-bold text-2xl md:text-4xl font-sans text-white mb-4">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8 md:py-10">
+          <div className="relative bg-black/60 backdrop-blur-md w-full max-w-md mx-auto rounded-2xl shadow-2xl border border-white/10 text-center p-5 sm:p-6 md:p-8">
+            <h1 className="font-bold text-xl sm:text-2xl md:text-4xl font-sans text-white mb-3 md:mb-4">
               Create Password
             </h1>
-            <p className="text-white/80 text-sm md:text-base mb-6">
+            <p className="text-white/80 text-xs sm:text-sm md:text-base mb-4 md:mb-6">
               Just one more step to finish creating your account
             </p>
 
@@ -117,7 +117,7 @@ function PasswordConfirmation(props) {
               />
 
               {/* Password Checklist */}
-              <div className="text-xs md:text-sm text-white/80 space-y-1">
+              <div className="text-[11px] sm:text-xs md:text-sm text-white/80 space-y-1">
                 <p className={`${password.length >= 6 ? 'text-green-400' : 'text-white/70'}`}>• At least 6 characters</p>
                 <p className={`${/\d/.test(password) ? 'text-green-400' : 'text-white/70'}`}>• Contains at least one number</p>
                 <p className={`${password && password === cpassword ? 'text-green-400' : 'text-white/70'}`}>• Passwords match</p>
@@ -128,7 +128,7 @@ function PasswordConfirmation(props) {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full py-3 rounded-lg text-white text-lg font-semibold disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
+                className="w-full py-3 rounded-lg text-white text-base sm:text-lg font-semibold disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
               >
                 {loading ? "Creating Account..." : "Finish Sign Up"}
               </button>
@@ -146,15 +146,15 @@ function PasswordConfirmation(props) {
 
       <div className="bg-[#161616]">
         <div className="p-6 md:p-20">
-          <p className="text-[#BABABA] py-3">Questions? Contact us.</p>
-          <div className="grid grid-cols-2 md:flex text-[#BABABA] justify-between underline gap-4 text-sm md:text-base">
+          <p className="text-[#BABABA] py-3 text-sm">Questions? Contact us.</p>
+          <div className="grid grid-cols-2 md:flex text-[#BABABA] justify-between underline gap-4 text-xs sm:text-sm md:text-base">
             <p>FAQ</p>
             <p>Help Center</p>
             <p>Terms of Use</p>
             <p>Privacy</p>
           </div>
 
-          <div className="grid grid-cols-1 md:flex text-[#BABABA] mt-5 md:gap-64 underline gap-4 text-sm md:text-base">
+          <div className="grid grid-cols-1 md:flex text-[#BABABA] mt-5 md:gap-64 underline gap-4 text-xs sm:text-sm md:text-base">
             <p>Cookie Preference</p>
             <p>Corporate Information</p>
           </div>
