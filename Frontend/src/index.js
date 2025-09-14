@@ -19,8 +19,8 @@ function Application()
 
     [
         {
-            username:"kibo",
-            password:"1234"
+            username:"kibo@gmail.com",
+            password:"1234qwer"
         },
 
         {
