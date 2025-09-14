@@ -1,33 +1,52 @@
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
+const mongoose = require("mongoose");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Configure your Gmail transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "kiboxsonleena2004@gmail.com",
-    pass: "yvxn npic idoj mikw", // Gmail app password
-  },
+// Connect to MongoDB
+mongoose.connect("mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0")
+  .then(() => console.log("Connected to DB"))
+  .catch(() => console.log("Failed to connect"));
+
+// Define Mongoose schema
+const credentialSchema = new mongoose.Schema({
+  user: String,
+  pass: String
 });
 
-app.post("/sendmail", async function (req, res) {
-  const { message, recipients } = req.body; // ✅ get recipients from frontend
+const Credential = mongoose.model("Credential", credentialSchema, "BulkMail");
+
+// Send mail endpoint
+app.post("/sendmail", async (req, res) => {
+  const { message, recipients } = req.body;
 
   if (!recipients || recipients.length === 0) {
     return res.json(false);
   }
 
   try {
-    // Loop through all emails and send one by one
+    const data = await Credential.find();
+    if (!data || data.length === 0) {
+      return res.json(false);
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: data[0].user,
+        pass: data[0].pass, // Gmail app password
+      },
+    });
+
+    // Send emails one by one
     for (let i = 0; i < recipients.length; i++) {
       await transporter.sendMail({
-        from: "kiboxsonleena2004@gmail.com",
+        from: data[0].user,
         to: recipients[i],
         subject: "Message from Bulk Mail",
         text: message,
@@ -36,12 +55,13 @@ app.post("/sendmail", async function (req, res) {
 
     console.log("All mails sent successfully ✅");
     res.json(true);
+
   } catch (error) {
     console.error("Error sending mail:", error);
     res.json(false);
   }
 });
 
-app.listen(5000, function () {
+app.listen(5000, () => {
   console.log("Server started on http://localhost:5000");
 });
