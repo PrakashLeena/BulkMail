@@ -62,6 +62,8 @@ function Login(props) {
       if (user) {
         // --- Step 5: success ---
         console.log("Login successful");
+        // Persist simple auth flag for route protection
+        localStorage.setItem('authUser', eusername);
         navigate("/Landing", { state: { user: eusername } });
       } else {
         setError("⚠️ Invalid username or password! Please signup first.");
