@@ -2,17 +2,23 @@
   "version": 2,
   "builds": [
     {
-      "src": "Backend/package.json",
+      "src": "Backend/index.js",
       "use": "@vercel/node"
     },
     {
       "src": "Frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      "config": {
+        "distDir": "build",
+        "env": {
+          "REACT_APP_API_URL": "/api"
+        }
+      }
     }
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/Backend" },
-    { "src": "/(.*)", "dest": "/Frontend/$1" }
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/Frontend" }
   ]
 }

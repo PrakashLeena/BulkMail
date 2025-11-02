@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Bulk Mail Application",
   "scripts": {
-    "build": "echo 'Build script executed'"
+    "build": "cd Frontend && npm install && npm run build && cd ../Backend && npm install",
+    "start": "cd Backend && npm start",
+    "dev": "concurrently \"cd Frontend && npm start\" \"cd Backend && npm run dev\""
   },
   "repository": {
     "type": "git",
@@ -14,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/PrakashLeena/BulkMail/issues"
   },
-  "homepage": "https://github.com/PrakashLeena/BulkMail#readme"
+  "homepage": "https://github.com/PrakashLeena/BulkMail#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
 }
