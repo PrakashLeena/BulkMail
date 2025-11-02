@@ -2,11 +2,16 @@ const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
+const path = require('path');
 
 const app = express();
 
+// Enable CORS for all routes
 app.use(cors());
 app.use(express.json());
+
+// Create a router for API routes
+const apiRouter = express.Router();
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0")
@@ -21,18 +26,18 @@ const credentialSchema = new mongoose.Schema({
 
 const Credential = mongoose.model("Credential", credentialSchema, "BulkMail");
 
-// Root endpoint
-app.get("/", (req, res) => {
-  res.json({ message: "Bulk Mail API is running" });
-});
-
 // Health check endpoint
-app.get("/health", (req, res) => {
+apiRouter.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// Root API endpoint
+apiRouter.get("/", (req, res) => {
+  res.json({ message: "Bulk Mail API is running" });
+});
+
 // Send mail endpoint
-app.post("/sendmail", async (req, res) => {
+apiRouter.post("/sendmail", async (req, res) => {
   const { message, recipients } = req.body;
 
   if (!recipients || recipients.length === 0) {
@@ -70,6 +75,20 @@ app.post("/sendmail", async (req, res) => {
     console.error("Error sending mail:", error);
     res.json(false);
   }
+});
+
+// Mount the API router
+app.use("/api", apiRouter);
+
+// Handle 404 for API routes
+app.use("/api/*", (req, res) => {
+  res.status(404).json({ error: "API endpoint not found" });
+});
+
+// For all other routes, serve the frontend
+app.use(express.static(path.join(__dirname, '../Frontend/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../Frontend/build/index.html'));
 });
 
 // Export the Express API for Vercel serverless functions
