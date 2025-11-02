@@ -21,13 +21,18 @@ const credentialSchema = new mongoose.Schema({
 
 const Credential = mongoose.model("Credential", credentialSchema, "BulkMail");
 
+// Root endpoint
+app.get("/", (req, res) => {
+  res.json({ message: "Bulk Mail API is running" });
+});
+
 // Health check endpoint
-app.get("/api/health", (req, res) => {
+app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
 // Send mail endpoint
-app.post("/api/sendmail", async (req, res) => {
+app.post("/sendmail", async (req, res) => {
   const { message, recipients } = req.body;
 
   if (!recipients || recipients.length === 0) {

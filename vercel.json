@@ -5,7 +5,7 @@
       "src": "Frontend/package.json",
       "use": "@vercel/static-build",
       "config": { 
-        "distDir": ".vercel_build_output/static",
+        "distDir": "build",
         "env": {
           "REACT_APP_API_URL": "/api"
         }
@@ -17,8 +17,7 @@
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/Backend" },
-    { "src": "/static/(.*)", "dest": "/static/$1" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/Frontend/$1" }
   ]
 }
