@@ -2,11 +2,12 @@
   "name": "bulk-mail",
   "version": "1.0.0",
   "description": "Bulk Mail Application",
+  "main": "Backend/index.js",
   "scripts": {
-    "build": "cd Frontend && npm install && npm run build && cd ../Backend && npm install",
-    "start": "cd Backend && npm start",
-    "dev": "concurrently \"cd Frontend && npm start\" \"cd Backend && npm run dev\"",
-    "vercel-build": "cd Frontend && npm install && npm run build && cd ../Backend && npm install"
+    "build": "cd Frontend && npm install && npm run build",
+    "start": "node Backend/index.js",
+    "dev": "concurrently \"cd Frontend && npm start\" \"nodemon Backend/index.js\"",
+    "vercel-build": "npm install && npm run build"
   },
   "repository": {
     "type": "git",
@@ -14,14 +15,17 @@
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/PrakashLeena/BulkMail/issues"
-  },
-  "homepage": "https://github.com/PrakashLeena/BulkMail#readme",
-  "engines": {
-    "node": ">=14.x"
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^8.1.3",
+    "nodemailer": "^6.9.5"
   },
   "devDependencies": {
-    "concurrently": "^8.2.0"
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

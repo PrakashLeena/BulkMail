@@ -10,9 +10,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Create a router for API routes
-const apiRouter = express.Router();
-
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0")
   .then(() => console.log("Connected to DB"))
@@ -26,18 +23,13 @@ const credentialSchema = new mongoose.Schema({
 
 const Credential = mongoose.model("Credential", credentialSchema, "BulkMail");
 
-// Health check endpoint
-apiRouter.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
-// Root API endpoint
-apiRouter.get("/", (req, res) => {
-  res.json({ message: "Bulk Mail API is running" });
+// API Routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 // Send mail endpoint
-apiRouter.post("/sendmail", async (req, res) => {
+app.post('/api/sendmail', async (req, res) => {
   const { message, recipients } = req.body;
 
   if (!recipients || recipients.length === 0) {
@@ -47,7 +39,7 @@ apiRouter.post("/sendmail", async (req, res) => {
   try {
     const data = await Credential.find();
     if (!data || data.length === 0) {
-      return res.json(false);
+      return res.json({ success: false, error: 'No email credentials found' });
     }
 
     const transporter = nodemailer.createTransport({
@@ -59,39 +51,46 @@ apiRouter.post("/sendmail", async (req, res) => {
     });
 
     // Send emails one by one
+    const results = [];
     for (let i = 0; i < recipients.length; i++) {
-      await transporter.sendMail({
-        from: data[0].user,
-        to: recipients[i],
-        subject: "Message from Bulk Mail",
-        text: message,
-      });
+      try {
+        const info = await transporter.sendMail({
+          from: data[0].user,
+          to: recipients[i],
+          subject: "Message from Bulk Mail",
+          text: message,
+        });
+        results.push({ to: recipients[i], status: 'success', messageId: info.messageId });
+      } catch (error) {
+        console.error(`Error sending to ${recipients[i]}:`, error);
+        results.push({ to: recipients[i], status: 'error', error: error.message });
+      }
     }
 
-    console.log("All mails sent successfully ✅");
-    res.json(true);
+    console.log("All mails processed");
+    res.json({ success: true, results });
 
   } catch (error) {
-    console.error("Error sending mail:", error);
-    res.json(false);
+    console.error("Error in sendmail:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Mount the API router
-app.use("/api", apiRouter);
-
-// Handle 404 for API routes
-app.use("/api/*", (req, res) => {
-  res.status(404).json({ error: "API endpoint not found" });
-});
-
-// For all other routes, serve the frontend
+// Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../Frontend/build')));
+
+// All remaining requests return the React app, so it can handle routing.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../Frontend/build/index.html'));
 });
 
-// Export the Express API for Vercel serverless functions
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// Export the Express API for Vercel
 module.exports = app;
 
 // Only start the server if this file is run directly (not imported as a module)
