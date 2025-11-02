@@ -1,0 +1,18 @@
+{
+  "name": "bulk-mail",
+  "version": "1.0.0",
+  "description": "Bulk Mail Application",
+  "scripts": {
+    "build": "echo 'Build script executed'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PrakashLeena/BulkMail.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PrakashLeena/BulkMail/issues"
+  },
+  "homepage": "https://github.com/PrakashLeena/BulkMail#readme"
+}

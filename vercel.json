@@ -2,13 +2,17 @@
   "version": 2,
   "builds": [
     {
-      "src": "Backend/index.js",
+      "src": "Backend/package.json",
       "use": "@vercel/node"
+    },
+    {
+      "src": "Frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     }
   ],
   "routes": [
-    { "src": "/api/health", "dest": "/Backend/index.js" },
-    { "src": "/api/sendmail", "dest": "/Backend/index.js", "methods": ["POST"] },
-    { "src": "/(.*)", "dest": "/Backend/index.js" }
+    { "src": "/api/(.*)", "dest": "/Backend" },
+    { "src": "/(.*)", "dest": "/Frontend/$1" }
   ]
 }
