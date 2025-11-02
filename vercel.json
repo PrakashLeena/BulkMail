@@ -4,7 +4,12 @@
     {
       "src": "Frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
+      "config": { 
+        "distDir": ".vercel_build_output/static",
+        "env": {
+          "REACT_APP_API_URL": "/api"
+        }
+      }
     },
     {
       "src": "Backend/index.js",
@@ -13,7 +18,7 @@
   ],
   "routes": [
     { "src": "/api/(.*)", "dest": "/Backend" },
-    { "src": "/static/(.*)", "dest": "/Frontend/static/$1" },
-    { "src": "/(.*)", "dest": "/Frontend/index.html" }
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
