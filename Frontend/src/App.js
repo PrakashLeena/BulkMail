@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import api, { API_BASE_URL } from "./config";
 
 function App() {
   const [message, setMessage] = useState("");
@@ -29,27 +30,70 @@ function App() {
     reader.readAsBinaryString(file);
   }
 
-  function send() {
+  async function send() {
+    if (emailList.length === 0) {
+      alert("Please add recipient emails first");
+      return;
+    }
+
+    if (!message.trim()) {
+      alert("Please enter a message");
+      return;
+    }
+
     setStatus(true);
-    axios
-      .post("http://localhost:5000/sendmail", { message: message, recipients: emailList })
-      .then(function (data) {
-        if (data.data === true) {
-          alert("Mail Sent Successfully");
-          setStatus(false);
-        } else {
-          alert("Failed");
-          setStatus(false);
-        }
-      })
-      .catch(() => {
-        alert("Error sending mail");
-        setStatus(false);
+    
+    try {
+      console.log("Sending request to:", api.sendMail);
+      console.log("With data:", { message, recipients: emailList });
+      
+      const response = await axios.post(api.sendMail, { 
+        message: message, 
+        recipients: emailList 
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true
       });
+      
+      console.log("Response:", response);
+      
+      if (response.data && response.data.success) {
+        alert("Mail Sent Successfully");
+      } else {
+        throw new Error(response.data?.error || 'Failed to send mail');
+      }
+    } catch (error) {
+      console.error("Error sending mail:", error);
+      alert(`Error: ${error.response?.data?.error || error.message || 'Failed to send mail'}`);
+    } finally {
+      setStatus(false);
+    }
   }
+
+  // Add a test connection function
+  const testConnection = async () => {
+    try {
+      console.log("Testing connection to:", API_BASE_URL);
+      const response = await axios.get(`${API_BASE_URL}/api/health`);
+      console.log("Connection test response:", response.data);
+      alert(`Backend is ${response.data.status}. MongoDB connected: ${response.data.mongoConnected ? '✅' : '❌'}`);
+    } catch (error) {
+      console.error("Connection test failed:", error);
+      alert(`Failed to connect to backend: ${error.message}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600 px-4 py-6 md:p-8 font-sans">
+      <button 
+        onClick={testConnection}
+        className="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50"
+        title="Test Backend Connection"
+      >
+        🔌 Test Connection
+      </button>
       <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-lg rounded-2xl md:rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-6 md:p-8 text-center relative">
