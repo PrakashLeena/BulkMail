@@ -22,10 +22,28 @@ app.use((req, res, next) => {
   next();
 });
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0")
-  .then(() => console.log("Connected to DB"))
-  .catch((err) => console.log("Failed to connect:", err));
+// Connect to MongoDB with better error handling
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(
+      process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0",
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+        socketTimeoutMS: 45000, // 45 seconds
+      }
+    );
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
+  } catch (error) {
+    console.error('MongoDB Connection Error:', error);
+    process.exit(1); // Exit process with failure
+  }
+};
+
+// Initialize database connection
+connectDB();
 
 // Define Mongoose schema
 const credentialSchema = new mongoose.Schema({
@@ -108,32 +126,38 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Error handling middleware
+// Error handling middleware with detailed logging
 app.use((err, req, res, next) => {
-  console.error('Error Stack:', err.stack);
-  console.error('Error Details:', {
-    message: err.message,
-    name: err.name,
+  const errorDetails = {
+    timestamp: new Date().toISOString(),
     path: req.path,
     method: req.method,
-    body: req.body,
-    params: req.params,
-    query: req.query,
-    headers: req.headers
-  });
-  
-  // Only show detailed error in development
-  if (process.env.NODE_ENV === 'development') {
-    return res.status(500).json({
-      error: 'Something went wrong!',
+    error: {
+      name: err.name,
       message: err.message,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
-    });
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    },
+    request: {
+      body: req.body,
+      params: req.params,
+      query: req.query,
+      headers: req.headers
+    },
+    environment: process.env.NODE_ENV || 'development'
+  };
+
+  // Log the full error details
+  console.error('API Error:', JSON.stringify(errorDetails, null, 2));
+
+  // Return appropriate response based on environment
+  if (process.env.NODE_ENV === 'development') {
+    return res.status(500).json(errorDetails);
   }
   
+  // In production, return a generic error message
   res.status(500).json({ 
     error: 'Something went wrong!',
-    requestId: req.id
+    errorId: Date.now() // For tracking in logs
   });
 });
 
