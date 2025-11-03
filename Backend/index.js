@@ -7,8 +7,12 @@ const path = require('path');
 const app = express();
 
 // Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0")
@@ -76,13 +80,25 @@ app.post('/api/sendmail', async (req, res) => {
   }
 });
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../Frontend/build')));
-
-// All remaining requests return the React app, so it can handle routing.
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../Frontend/build/index.html'));
-});
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../Frontend/build')));
+  // All remaining requests return the React app, so it can handle routing.
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../Frontend/build/index.html'));
+  });
+} else {
+  // In development, just provide a simple response
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'BulkMail API is running in development mode',
+      apiEndpoints: {
+        healthCheck: '/api/health',
+        sendMail: '/api/sendmail (POST)'
+      }
+    });
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -93,10 +109,14 @@ app.use((err, req, res, next) => {
 // Export the Express API for Vercel
 module.exports = app;
 
-// Only start the server if this file is run directly (not imported as a module)
+// Start the server if this file is run directly (not imported as a module)
+// For Vercel, we export the app directly
+const port = process.env.PORT || 5000;
 if (require.main === module) {
-  const port = process.env.PORT || 5000;
   app.listen(port, () => {
     console.log(`Server started on http://localhost:${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
+
+// Export the Express app for Vercel
