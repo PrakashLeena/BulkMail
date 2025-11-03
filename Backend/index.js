@@ -45,6 +45,18 @@ const connectDB = async () => {
 // Initialize database connection
 connectDB();
 
+// MongoDB connection monitoring
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');});
+
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB connected successfully');
+});
+
 // Define Mongoose schema
 const credentialSchema = new mongoose.Schema({
   user: String,
@@ -55,7 +67,38 @@ const Credential = mongoose.model("Credential", credentialSchema, "BulkMail");
 
 // API Routes
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+  res.json({ 
+    status: 'ok',
+    mongoConnected: mongoose.connection.readyState === 1,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  try {
+    console.log('Test endpoint hit');
+    res.json({
+      success: true,
+      message: 'API is working!',
+      timestamp: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV || 'development',
+      mongoConnected: mongoose.connection.readyState === 1,
+      mongoState: {
+        '0': 'disconnected',
+        '1': 'connected',
+        '2': 'connecting',
+        '3': 'disconnecting'
+      }[mongoose.connection.readyState]
+    });
+  } catch (error) {
+    console.error('Test endpoint error:', error);
+    res.status(500).json({ 
+      error: 'Test failed', 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 });
 
 // Send mail endpoint
