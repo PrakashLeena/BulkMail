@@ -33,14 +33,10 @@ const connectDB = async (retryCount = 0) => {
     const conn = await mongoose.connect(
       process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0",
       {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
         serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
         connectTimeoutMS: 10000,
         heartbeatFrequencyMS: 10000,
-        retryWrites: true,
-        w: 'majority',
       }
     );
     
@@ -215,25 +211,19 @@ app.post('/api/sendmail', async (req, res) => {
   }
 });
 
-// Serve static files from the React app in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../Frontend/build')));
-  // All remaining requests return the React app, so it can handle routing.
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../Frontend/build/index.html'));
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'BulkMail API is running',
+    environment: process.env.NODE_ENV || 'development',
+    mongoConnected: mongoose.connection.readyState === 1,
+    apiEndpoints: {
+      healthCheck: '/api/health',
+      test: '/api/test',
+      sendMail: '/api/sendmail (POST)'
+    }
   });
-} else {
-  // In development, just provide a simple response
-  app.get('/', (req, res) => {
-    res.json({
-      message: 'BulkMail API is running in development mode',
-      apiEndpoints: {
-        healthCheck: '/api/health',
-        sendMail: '/api/sendmail (POST)'
-      }
-    });
-  });
-}
+});
 
 // Error handling middleware with detailed logging
 app.use((err, req, res, next) => {

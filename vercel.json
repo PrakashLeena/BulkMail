@@ -3,11 +3,23 @@
   "builds": [
     {
       "src": "Backend/index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "15mb"
+      }
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/Backend/index.js" },
-    { "src": "/(.*)", "dest": "/Backend/index.js" }
-  ]
+    {
+      "src": "/api/(.*)",
+      "dest": "Backend/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "Backend/index.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
