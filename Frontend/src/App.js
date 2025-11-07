@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import api, { API_BASE_URL } from "./config";

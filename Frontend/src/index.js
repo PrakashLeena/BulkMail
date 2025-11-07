@@ -6,9 +6,7 @@ import Signup from './Signup';
 import PasswordConfirmation from './PasswordConfirmation';
 import './index.css';
 import { useState } from 'react';
-import axios from 'axios';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -29,11 +27,6 @@ function Application()
         }
     ]
    )
-
-   function check(){
-     const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-     var logindetails = axios.get(`${apiUrl}/login`)
-   }
 
    // Simple ProtectedRoute: checks a flag in localStorage set on login
    const ProtectedRoute = ({ children }) => {
