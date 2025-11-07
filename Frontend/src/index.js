@@ -47,8 +47,7 @@ function Application()
    </div>)
 }
 root.render(
-  <div>
+  <React.StrictMode>
     <Application />
-    </div>
-
+  </React.StrictMode>
 );

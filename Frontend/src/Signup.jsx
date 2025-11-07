@@ -1,4 +1,3 @@
-import img from "./assets/images/bulk.png"
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from "react";
 
@@ -53,9 +52,8 @@ function Signup(props) {
     }
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <img className="w-screen h-full md:h-screen object-cover absolute inset-0" src={img} alt="background" />
-            <div className="absolute inset-0 bg-black/60"></div>
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600">
+            <div className="absolute inset-0 bg-black/40"></div>
             <div className="relative flex-1 flex flex-col">
                 <header className="relative">
                     <div className="relative mx-4 md:ml-14 flex justify-between items-center py-4 md:py-6">
