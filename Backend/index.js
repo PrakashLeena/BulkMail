@@ -3,6 +3,7 @@ const cors = require("cors");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 
@@ -22,101 +23,50 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB connection configuration
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 5000; // 5 seconds
+// MongoDB connection configuration for serverless
+let cachedDb = null;
 
-const connectDB = async (retryCount = 0) => {
+const connectDB = async () => {
+  // Return cached connection if available
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    console.log('Using cached MongoDB connection');
+    return cachedDb;
+  }
+
   try {
-    console.log(`Attempting to connect to MongoDB (Attempt ${retryCount + 1}/${MAX_RETRIES})...`);
+    console.log('Establishing new MongoDB connection...');
     
-    const conn = await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0",
-      {
-        serverSelectionTimeoutMS: 10000,
-        socketTimeoutMS: 45000,
-        connectTimeoutMS: 10000,
-        heartbeatFrequencyMS: 10000,
-      }
-    );
+    const mongoUri = process.env.MONGODB_URI || "mongodb+srv://kiboxsonleena2004_db_user:20040620@cluster0.fk6vzxs.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0";
     
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      // Serverless-friendly options
+      maxPoolSize: 10,
+      minPoolSize: 1,
+    });
+    
+    cachedDb = conn;
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     console.log(`📊 Database Name: ${conn.connection.name}`);
-    console.log(`🔄 Ready State: ${conn.connection.readyState === 1 ? 'Connected' : 'Disconnected'}`);
     
     return conn;
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error (Attempt ${retryCount + 1}):`, error.message);
-    
-    if (retryCount < MAX_RETRIES - 1) {
-      console.log(`Retrying in ${RETRY_DELAY / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-      return connectDB(retryCount + 1);
-    }
-    
-    console.error('❌ Max retries reached. Could not connect to MongoDB.');
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('Full error details:', error);
-    }
-    
-    // Don't exit in production to allow the app to start in a degraded state
-    if (process.env.NODE_ENV === 'development') {
-      process.exit(1);
-    }
-    
+    console.error('❌ MongoDB Connection Error:', error.message);
+    cachedDb = null;
     throw error;
   }
 };
 
-// Initialize database connection
-connectDB().catch(console.error);
-
-// Connection event handlers
-mongoose.connection.on('connected', () => {
-  console.log('✅ MongoDB connected successfully');  
-  console.log(`   - Database: ${mongoose.connection.name}`);
-  console.log(`   - Host: ${mongoose.connection.host}`);
-  console.log(`   - Port: ${mongoose.connection.port}`);
-});
-
+// Connection event handlers (simplified for serverless)
 mongoose.connection.on('error', (err) => {
   console.error('❌ MongoDB connection error:', err.message);
-  if (process.env.NODE_ENV === 'development') {
-    console.error(err.stack);
-  }
+  cachedDb = null;
 });
 
 mongoose.connection.on('disconnected', () => {
   console.log('ℹ️  MongoDB disconnected');
-  // Attempt to reconnect
-  if (process.env.NODE_ENV !== 'test') {
-    console.log('Attempting to reconnect to MongoDB...');
-    connectDB().catch(console.error);
-  }
-});
-
-// Close the connection when the Node process ends
-process.on('SIGINT', async () => {
-  try {
-    await mongoose.connection.close();
-    console.log('MongoDB connection closed through app termination');
-    process.exit(0);
-  } catch (err) {
-    console.error('Error closing MongoDB connection:', err);
-    process.exit(1);
-  }
-});
-
-// MongoDB connection monitoring
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');});
-
-mongoose.connection.on('connected', () => {
-  console.log('MongoDB connected successfully');
+  cachedDb = null;
 });
 
 // Define Mongoose schema
@@ -128,18 +78,29 @@ const credentialSchema = new mongoose.Schema({
 const Credential = mongoose.model("Credential", credentialSchema, "BulkMail");
 
 // API Routes
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    mongoConnected: mongoose.connection.readyState === 1,
-    timestamp: new Date().toISOString()
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    await connectDB();
+    res.json({ 
+      status: 'ok',
+      mongoConnected: mongoose.connection.readyState === 1,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      mongoConnected: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Test endpoint
-app.get('/api/test', (req, res) => {
+app.get('/api/test', async (req, res) => {
   try {
     console.log('Test endpoint hit');
+    await connectDB();
     res.json({
       success: true,
       message: 'API is working!',
@@ -172,6 +133,9 @@ app.post('/api/sendmail', async (req, res) => {
   }
 
   try {
+    // Ensure DB connection
+    await connectDB();
+    
     const data = await Credential.find();
     if (!data || data.length === 0) {
       return res.json({ success: false, error: 'No email credentials found' });
@@ -212,17 +176,31 @@ app.post('/api/sendmail', async (req, res) => {
 });
 
 // Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'BulkMail API is running',
-    environment: process.env.NODE_ENV || 'development',
-    mongoConnected: mongoose.connection.readyState === 1,
-    apiEndpoints: {
-      healthCheck: '/api/health',
-      test: '/api/test',
-      sendMail: '/api/sendmail (POST)'
-    }
-  });
+app.get('/', async (req, res) => {
+  try {
+    await connectDB();
+    res.json({
+      message: 'BulkMail API is running',
+      environment: process.env.NODE_ENV || 'development',
+      mongoConnected: mongoose.connection.readyState === 1,
+      apiEndpoints: {
+        healthCheck: '/api/health',
+        test: '/api/test',
+        sendMail: '/api/sendmail (POST)'
+      }
+    });
+  } catch (error) {
+    res.json({
+      message: 'BulkMail API is running (DB connection pending)',
+      environment: process.env.NODE_ENV || 'development',
+      mongoConnected: false,
+      apiEndpoints: {
+        healthCheck: '/api/health',
+        test: '/api/test',
+        sendMail: '/api/sendmail (POST)'
+      }
+    });
+  }
 });
 
 // Error handling middleware with detailed logging
