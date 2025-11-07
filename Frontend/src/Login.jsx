@@ -195,55 +195,6 @@ function Login(props) {
         </div>
       </div>
 
-                    required
-                    value={epassword}
-                    onChange={handlePIput}
-                    placeholder="Password"
-                    error={!!error}
-                  />
-
-                  {error && <p className="text-red-600 font-bold text-sm">{error}</p>}
-
-                  <button
-                    onClick={checkUser}
-                    disabled={loading}
-                    className="w-full py-3 rounded-lg text-white font-semibold disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl
-                    bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500"
-                  >
-                    {loading ? "Signing In..." : "Sign In"}
-                  </button>
-
-                  <p className="text-center text-sm sm:text-base md:text-lg text-white/80">OR</p>
-                  <button className="bg-white/10 w-full py-3 rounded-lg text-white hover:bg-white/20 transition-colors">
-                    Use a Sign-In code
-                  </button>
-                  <p className="text-white/90 underline cursor-pointer hover:text-white text-sm sm:text-base">Forgot password?</p>
-
-                  <div className="flex items-center justify-center mt-4">
-                    <input className="w-4 h-4 mr-2 accent-purple-600" type="checkbox" id="remember" />
-                    <label htmlFor="remember" className="text-white text-xs sm:text-sm select-none">Remember me</label>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-1 mt-4">
-                    <p className="text-white/30 text-xs sm:text-sm">New to BulkMail</p>
-                    <p className="text-white text-xs sm:text-sm hover:underline">
-                      <Link to={"/Signup"}>Sign up now.</Link>
-                    </p>
-                  </div>
-
-                  <div className="mt-4">
-                    <p className="text-white text-[10px] sm:text-xs px-2 sm:px-4">
-                      This page is protected by Google reCAPTCHA to ensure you're not
-                      a bot.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Footer */}
       <div className="bg-[#161616] mt-auto">
         <div className="p-6 md:p-20">
