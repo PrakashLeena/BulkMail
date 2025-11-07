@@ -15,12 +15,19 @@
     "nodemailer": "^6.9.5"
   },
   "devDependencies": {
+    "axios": "^1.13.2",
     "nodemon": "^3.0.1"
   },
   "engines": {
     "node": "18.x"
   },
-  "keywords": ["email", "bulk", "node", "express", "mongodb"],
+  "keywords": [
+    "email",
+    "bulk",
+    "node",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC"
 }
