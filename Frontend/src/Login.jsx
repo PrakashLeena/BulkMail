@@ -1,5 +1,4 @@
 import { useState } from "react";
-import img from "./assets/images/bulk.png";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "./PasswordInput";
 
@@ -77,9 +76,8 @@ function Login(props) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <img className="w-screen h-full md:h-screen object-cover absolute inset-0" src={img} alt="background" />
-      <div className="absolute inset-0 bg-black/60"></div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600">
+      <div className="absolute inset-0 bg-black/40"></div>
 
       {/* Page Content */}
       <div className="relative flex flex-col flex-1">
