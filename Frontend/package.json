@@ -20,7 +20,6 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "vercel-build": "node vercel-build.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
