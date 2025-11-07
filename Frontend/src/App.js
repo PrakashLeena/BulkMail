@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import api, { API_BASE_URL } from "./config";
 
+// Debug version to help identify the issue
+console.log('🚀 App component loading...');
+console.log('📦 Imports loaded successfully');
+console.log('🔗 API_BASE_URL:', API_BASE_URL);
+
 function App() {
+  console.log('🎯 App function called');
+
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState(false);
   const [emailList, setEmailList] = useState([]);
+
+  useEffect(() => {
+    console.log('🔄 App useEffect triggered');
+  }, []);
+
+  console.log('📱 App component about to render');
 
   function handleMessage(evt) {
     setMessage(evt.target.value);
@@ -42,23 +55,23 @@ function App() {
     }
 
     setStatus(true);
-    
+
     try {
       console.log("Sending request to:", api.sendMail);
       console.log("With data:", { message, recipients: emailList });
-      
-      const response = await axios.post(api.sendMail, { 
-        message: message, 
-        recipients: emailList 
+
+      const response = await axios.post(api.sendMail, {
+        message: message,
+        recipients: emailList
       }, {
         headers: {
           'Content-Type': 'application/json',
         },
         withCredentials: true
       });
-      
+
       console.log("Response:", response);
-      
+
       if (response.data && response.data.success) {
         alert("Mail Sent Successfully");
       } else {
@@ -85,9 +98,11 @@ function App() {
     }
   };
 
+  console.log('🎨 App about to return JSX');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600 px-4 py-6 md:p-8 font-sans">
-      <button 
+      <button
         onClick={testConnection}
         className="fixed bottom-4 right-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50"
         title="Test Backend Connection"
